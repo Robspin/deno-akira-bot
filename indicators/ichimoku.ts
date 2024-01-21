@@ -1,6 +1,4 @@
 // ichimoku cloud with 20 60 120 30 as settings
-
-
 import { getCandles } from '../helpers/bitfinex-public.ts'
 
 let priceAboveTenkan: boolean
@@ -78,16 +76,24 @@ const priceAndCloud = (candles: any[], senkouA: number, senkouB: number) => {
 }
 
 export const ichimoku = async (timeframe: string) => {
-    const candles = await getCandles(timeframe, 152)
+    const candles = await getCandles(timeframe, 152, true)
 
     const tenkan = getTenkan(candles)
     const kijun = getKijun(candles)
     const senkouA = getSenkouA(candles)
     const senkouB = getSenkouB(candles)
 
-    priceAboveTenkan = candles[150][4] > tenkan
+    priceAboveTenkan = candles[150][2] > tenkan
     bullishCross = tenkan > kijun
     bullishCloud = senkouA > senkouB
+
+    // const signalBigDetails = `
+    //         Tenkan = ${tenkan}, Kijun = ${kijun}.
+    //         SenkouA = ${senkouA}, SenkouB = ${senkouB}.
+    //         ${bullishCross ? 'Bullish cross.' : 'Bearish cross.'}
+    //         ${bullishCloud ? 'Bullish cloud.' : 'Bearish cloud.'}
+    //         ${priceAndCloud(candles, senkouA, senkouB)}
+    //         ${priceAboveTenkan ? 'Price above tenkan.' : 'Price below tenkan.'}`
 
     const signalDetails = `${bullishCross ? 'Bullish cross' : 'Bearish cross'}, ${bullishCloud ? 'bullish cloud' : 'bearish cloud'}, ${priceAndCloud(candles, senkouA, senkouB)}`
 

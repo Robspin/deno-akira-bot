@@ -1,7 +1,7 @@
 // Williams Fractal calculation from candles.
 import { getCandles } from '../helpers/bitfinex-public.ts'
 
-const getUpFractal = (candleHighs: string[]) => {
+const getUpFractal = (candleHighs: number[]) => {
     let upFractals: number[] = []
     candleHighs.forEach((candle, index) => {
         const forward1 = candleHighs[index + 1] < candle
@@ -16,9 +16,9 @@ const getUpFractal = (candleHighs: string[]) => {
     return upFractals
 }
 
-const getDownFractal = (candleLows: string[]) => {
+const getDownFractal = (candleLows: number[]) => {
     const downFractals: number[] = []
-    candleLows.forEach((candle: string, index: number) => {
+    candleLows.forEach((candle: number, index: number) => {
         const forward1 = candleLows[index + 1] > candle
         const forward2 = candleLows[index + 2] > candle
         const backward1 = candleLows[index - 1] > candle
@@ -33,10 +33,10 @@ const getDownFractal = (candleLows: string[]) => {
 
 export const williamsFractals = async (timeframe: string) => {
     const candles = await getCandles(timeframe)
-    console.log(candles)
 
-    const candleHighs = candles.map((high: string[]) => high[3])
-    const candleLows = candles.map((low: string[]) => low[4])
+    const candleHighs = candles.map((high: number[]) => high[3])
+
+    const candleLows = candles.map((low: number[]) => low[4])
     const upFractals = getUpFractal(candleHighs)
     const downFractals = getDownFractal(candleLows)
     return { upFractals,  downFractals }
