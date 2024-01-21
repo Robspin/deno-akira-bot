@@ -1,6 +1,7 @@
 // ichimoku cloud with 20 60 120 30 as settings
 
-import { getCandles } from '../helpers/binance.ts'
+
+import { getCandles } from '../helpers/bitfinex-public.ts'
 
 let priceAboveTenkan: boolean
 let bullishCross: boolean
@@ -33,7 +34,7 @@ const getSenkouB = (candles: string[]) => {
 }
 
 const findHighest = (arrayAll: any[]) => {
-    let array = arrayAll.map(int => int[2])
+    let array = arrayAll.map(int => int[3])
     let max = 0,
         a = array.length,
         counter
@@ -47,7 +48,7 @@ const findHighest = (arrayAll: any[]) => {
 }
 
 const findLowest = (arrayAll: any[]) => {
-    const array = arrayAll.map(int => int[3])
+    const array = arrayAll.map(int => int[4])
     let min = 10000000,
         a = array.length,
         counter
@@ -61,11 +62,11 @@ const findLowest = (arrayAll: any[]) => {
 }
 
 const priceAndCloud = (candles: any[], senkouA: number, senkouB: number) => {
-    if (candles[150][4] > senkouA && candles[150][4] > senkouB) {
+    if (candles[150][2] > senkouA && candles[150][2] > senkouB) {
         priceAboveCloud = true
         priceBelowCloud = false
         return 'price above cloud'
-    } else if (candles[150][4] < senkouA && candles[150][4] < senkouB) {
+    } else if (candles[150][2] < senkouA && candles[150][2] < senkouB) {
         priceBelowCloud = true
         priceAboveCloud = false
         return 'price below cloud'
