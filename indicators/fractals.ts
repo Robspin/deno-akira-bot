@@ -34,6 +34,8 @@ const getDownFractal = (candleLows: string[]) => {
 
 export const williamsFractals = async (timeframe: string) => {
     const res = await getCandles(timeframe)
+    console.log(res)
+
     const candles = res.slice(0, 41).reverse()
 
     const candleHighs = candles.map((high: string[]) => high[2])
