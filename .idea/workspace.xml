@@ -5,10 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="86d5d6cb-00ac-4efc-abc3-d83ff1572dc5" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/helpers/binance.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/indicators/fractals.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/indicators/ichimoku.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/strategies/original-cloud-fractal-strategy.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.env.example" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.ts" beforeDir="false" afterPath="$PROJECT_DIR$/main.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -30,7 +29,7 @@
   "keyToString": {
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "master",
     "last_opened_file_path": "/Users/robinsteeman/Desktop/sandbox/personal-projects/deno/deno-akira-bot",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -57,7 +56,7 @@
       <workItem from="1705519741068" duration="1161000" />
       <workItem from="1705565913005" duration="28000" />
       <workItem from="1705830310047" duration="2267000" />
-      <workItem from="1705833079436" duration="1454000" />
+      <workItem from="1705833079436" duration="2580000" />
     </task>
     <servers />
   </component>
