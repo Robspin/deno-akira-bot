@@ -1,5 +1,8 @@
-import { runStrategy } from './strategies/original-cloud-fractal-strategy.ts'
+// import { runStrategy } from './strategies/original-cloud-fractal-strategy.ts'
 
 
-await runStrategy()
-console.log('test')
+(() => console.log('running...')
+
+)()
+
+// await runStrategy()
