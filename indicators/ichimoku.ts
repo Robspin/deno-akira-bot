@@ -1,5 +1,7 @@
 // ichimoku cloud with 20 60 120 30 as settings
-import { getCandles } from '../helpers/bitfinex-public.ts'
+import { getCandles } from '../helpers/bitfinex/bitfinex-public.ts'
+
+export type Signal = 'LONG' | 'SHORT' | 'NO SIGNAL'
 
 let priceAboveTenkan: boolean
 let bullishCross: boolean
@@ -75,7 +77,7 @@ const priceAndCloud = (candles: any[], senkouA: number, senkouB: number) => {
     }
 }
 
-export const ichimoku = async (timeframe: string) => {
+export const ichimoku = async (timeframe: string): Promise<{ signal: Signal, signalDetails: string }> => {
     const candles = await getCandles(timeframe, 152, true)
 
     const tenkan = getTenkan(candles)

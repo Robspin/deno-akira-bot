@@ -1,5 +1,5 @@
 // Williams Fractal calculation from candles.
-import { getCandles } from '../helpers/bitfinex-public.ts'
+import { getCandles } from '../helpers/bitfinex/bitfinex-public.ts'
 
 const getUpFractal = (candleHighs: number[]) => {
     let upFractals: number[] = []
