@@ -92,7 +92,7 @@ export class BitfinexTradingClass extends BaseTradingClass {
         try {
             const orders: any[] = await this.bfxClient.bitfinexApiPost('v2/auth/r/orders')
 
-            if (!orders) return { success: true, message: 'Found no orders while trying to update stoploss' }
+            if (orders.length === 0) return { success: true, message: 'Found no orders while trying to update stoploss' }
 
             const [id, _1, _2, _pair, _4, _5, amount, _7, _type, _9, _10, _11, _12, _13, _14, _15, price] = orders[0]
 

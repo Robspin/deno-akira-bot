@@ -1,8 +1,7 @@
 import { env } from '../constants.ts'
 import { williamsFractals } from '../indicators/fractals.ts'
 import { ichimoku, Signal } from '../indicators/ichimoku.ts'
-import { sendEvent } from '../helpers/event-api.ts'
-import { BaseTradingClassInstance } from '../helpers/base-trading-class.ts'
+import { sendEvent as apiSendEvent } from '../helpers/event-api.ts'
 import { BitfinexTradingClass } from '../helpers/bitfinex/bitfinex-trading-class.ts'
 import { BitfinexBaseClient } from '../helpers/bitfinex/bitfinex-base-client.ts'
 
@@ -20,37 +19,38 @@ export const getStrategyInfo = async (): Promise<StrategyInfo> => {
     return { fractals, signal, signalDetails }
 }
 
-export const runStrategy = async () => {
-    const { fractals, signal, signalDetails } = await getStrategyInfo()
-
+const sendEvent = async (message: string) => {
     try {
-        await sendEvent(`${signal}. ${signalDetails}`)
+        await apiSendEvent(message)
     } catch (e) {
         console.log(e)
     }
+}
 
-    // if (signal !== 'LONG') return
+export const runStrategy = async () => {
+    const { fractals, signal, signalDetails } = await getStrategyInfo()
+
+
     const bfxClient = new BitfinexBaseClient(env.BITFINEX_API_KEY ?? '', env.BITFINEX_API_SECRET ?? '')
     const tradingClient = new BitfinexTradingClass(bfxClient)
 
-    const accountBalance = await tradingClient.getAccountBalance()
+    const stopLossRes = await tradingClient.checkAndUpdateLongStopLoss(fractals)
+
+    await sendEvent(`${signal}. ${stopLossRes.message}. ${signalDetails}`)
+
+    if (signal !== 'LONG') return
     const openTrades = await tradingClient.hasOpenTrades()
-    const positionSizeUSD = await tradingClient.getPositionSizeInDollars(accountBalance)
+    if (openTrades) return
+
+    const accountBalance = await tradingClient.getAccountBalance()
+    // const positionSizeUSD = tradingClient.getPositionSizeInDollars(accountBalance)
     const positionSizeBTC = String(await tradingClient.getPositionSizeInBTC(accountBalance))
     const negativePositionSizeBTC = String(Number(positionSizeBTC) * -1)
 
+    const openLong = await tradingClient.openLong(String(positionSizeBTC))
+    const setStopLoss = await tradingClient.openStopLoss(negativePositionSizeBTC, String(fractals.downFractals[0]))
 
-    // const openLong = await tradingClient.openLong(String(positionSizeBTC))
-    // const updateStopLoss = await tradingClient.checkAndUpdateLongStopLoss(fractals)
-    // const setStopLoss = await tradingClient.openStopLoss(negativePositionSizeBTC, String(fractals.downFractals[0]))
-
-    console.log('accountBallance: ', accountBalance)
-    console.log('openTrades: ', openTrades)
-    console.log('positionSizeUSD: ', positionSizeUSD)
-    console.log('positionSizeBTC: ', positionSizeBTC)
-    // console.log('openLong: ', openLong)
-    // console.log('setStopLoss: ', updateStopLoss)
-
+    await sendEvent(`Entered long trade! Opened long: ${openLong.success}, has set a stop ${setStopLoss.success}`)
 
     // Event LONG
     //      check if in trade
@@ -58,8 +58,6 @@ export const runStrategy = async () => {
 
     //      if not in trade (and no LONG signal?):
     // //      Update status in db? NO TRADE?
-
-
 
     // console.log(fractals, signal)
     // console.log(signalDetails)
