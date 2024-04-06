@@ -33,15 +33,23 @@ export const runStrategy = async () => {
     const bfxClient = new BitfinexBaseClient(env.BITFINEX_API_KEY ?? '', env.BITFINEX_API_SECRET ?? '')
     const tradingClient = new BitfinexTradingClass(bfxClient)
 
-    const accountBallance = await tradingClient.getAccountBalance()
+    const accountBalance = await tradingClient.getAccountBalance()
     const openTrades = await tradingClient.hasOpenTrades()
-    const positionSizeUSD = await tradingClient.getPositionSizeInDollars(accountBallance)
-    const positionSizeBTC = await tradingClient.getPositionSizeInBTC(accountBallance)
+    const positionSizeUSD = await tradingClient.getPositionSizeInDollars(accountBalance)
+    const positionSizeBTC = String(await tradingClient.getPositionSizeInBTC(accountBalance))
+    const negativePositionSizeBTC = String(Number(positionSizeBTC) * -1)
 
-    console.log('accountBallance: ', accountBallance)
-    console.log('openTrades: ', openTrades)
-    console.log('positionSizeUSD: ', positionSizeUSD)
-    console.log('positionSizeBTC: ', positionSizeBTC)
+
+    // const openLong = await tradingClient.openLong(String(positionSizeBTC))
+    const updateStopLoss = await tradingClient.checkAndUpdateLongStopLoss(fractals)
+    // const setStopLoss = await tradingClient.openStopLoss(negativePositionSizeBTC, String(fractals.downFractals[0]))
+
+    // console.log('accountBallance: ', accountBallance)
+    // console.log('openTrades: ', openTrades)
+    // console.log('positionSizeUSD: ', positionSizeUSD)
+    // console.log('positionSizeBTC: ', positionSizeBTC)
+    // console.log('openLong: ', openLong)
+    console.log('setStopLoss: ', updateStopLoss)
 
 
     // Event LONG
