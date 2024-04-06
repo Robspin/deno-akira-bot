@@ -8,6 +8,8 @@ import { env } from './constants.ts'
 //     backoffSchedule: [1000, 5000, 10000]
 // })
 
-Deno.cron("Run once a minute", "* * * * *", () => {
+console.log(env.STRATEGY_CRON_SETTINGS)
+
+Deno.cron("Run once a minute", env.STRATEGY_CRON_SETTINGS ?? "4 * * *", () => {
     runStrategy()
 });
