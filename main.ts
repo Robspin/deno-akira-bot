@@ -9,5 +9,5 @@ import { env } from './constants.ts'
 // })
 
 Deno.cron("Run once a minute", "* * * * *", () => {
-    console.log("Hello, cron!");
+    runStrategy()
 });

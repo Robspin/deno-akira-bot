@@ -41,15 +41,15 @@ export const runStrategy = async () => {
 
 
     // const openLong = await tradingClient.openLong(String(positionSizeBTC))
-    const updateStopLoss = await tradingClient.checkAndUpdateLongStopLoss(fractals)
+    // const updateStopLoss = await tradingClient.checkAndUpdateLongStopLoss(fractals)
     // const setStopLoss = await tradingClient.openStopLoss(negativePositionSizeBTC, String(fractals.downFractals[0]))
 
-    // console.log('accountBallance: ', accountBallance)
-    // console.log('openTrades: ', openTrades)
-    // console.log('positionSizeUSD: ', positionSizeUSD)
-    // console.log('positionSizeBTC: ', positionSizeBTC)
+    console.log('accountBallance: ', accountBalance)
+    console.log('openTrades: ', openTrades)
+    console.log('positionSizeUSD: ', positionSizeUSD)
+    console.log('positionSizeBTC: ', positionSizeBTC)
     // console.log('openLong: ', openLong)
-    console.log('setStopLoss: ', updateStopLoss)
+    // console.log('setStopLoss: ', updateStopLoss)
 
 
     // Event LONG
