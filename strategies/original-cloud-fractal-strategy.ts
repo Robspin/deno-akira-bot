@@ -4,6 +4,7 @@ import { ichimoku, Signal } from '../indicators/ichimoku.ts'
 import { sendEvent as apiSendEvent } from '../helpers/event-api.ts'
 import { BitfinexTradingClass } from '../helpers/bitfinex/bitfinex-trading-class.ts'
 import { BitfinexBaseClient } from '../helpers/bitfinex/bitfinex-base-client.ts'
+import { dbUpdateStrategy } from '../helpers/db-api.ts'
 
 type StrategyInfo = {
     fractals:  { upFractals: number[], downFractals: number[] }
@@ -49,8 +50,9 @@ export const runStrategy = async () => {
 
     const openLong = await tradingClient.openLong(String(positionSizeBTC))
     const setStopLoss = await tradingClient.openStopLoss(negativePositionSizeBTC, String(fractals.downFractals[0]))
+    const updateDBRes = await dbUpdateStrategy('ICHIMOKU_WILLIAMS_LONG', { inTrade: true })
 
-    await sendEvent(`Entered long trade! Opened long: ${openLong.success}, has set a stop ${setStopLoss.success}`)
+    await sendEvent(`Entered long trade! Opened long: ${openLong.success}, has set a stop ${setStopLoss.success}, updatedDB: ${updateDBRes?.success}`)
 
     // Event LONG
     //      check if in trade

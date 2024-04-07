@@ -14,4 +14,7 @@ export const env = {
     EVENT_API_URL: localEnv.EVENT_API_URL || Deno.env.get('EVENT_API_URL'),
     EVENT_API_TOKEN: localEnv.EVENT_API_TOKEN || Deno.env.get('EVENT_API_TOKEN'),
     EVENT_API_SOURCE: localEnv.EVENT_API_SOURCE || Deno.env.get('EVENT_API_SOURCE'),
+
+    DB_API_AUTHORIZATION_KEY: localEnv.DB_API_AUTHORIZATION_KEY || Deno.env.get('DB_API_AUTHORIZATION_KEY'),
+    DB_API_URL: localEnv.DB_API_URL || Deno.env.get('DB_API_URL')
 }
