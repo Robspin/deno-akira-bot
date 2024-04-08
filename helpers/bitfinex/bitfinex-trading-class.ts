@@ -90,21 +90,28 @@ export class BitfinexTradingClass extends BaseTradingClass {
         const fractal = String(fractals.downFractals[0])
 
         try {
+            const positions: any[] = await this.bfxClient.bitfinexApiPost('v2/auth/r/positions')
             const orders: any[] = await this.bfxClient.bitfinexApiPost('v2/auth/r/orders')
 
-            if (orders.length === 0) return { success: true, message: '' }
+            if (positions.length !== 0 && orders.length === 0) {
+                const amount = positions[0][2] * -1
+                const stopRes = await this.openStopLoss(String(amount), String(fractal))
+
+                if (stopRes.success) return { success: true, message: 'There was no stop! Stop set!' }
+                return { success: false, message: 'There was no stop! Failed to set stop!' }
+            }
 
             const [id, _1, _2, _pair, _4, _5, amount, _7, _type, _9, _10, _11, _12, _13, _14, _15, price] = orders[0]
 
-            const newStop = price !== fractal
-            if (!newStop) return { success: false, message: 'Checked but no new stop set' }
+            const newStop = String(price) !== fractal
+            if (!newStop) return { success: false, message: 'Checked but no new stop set.' }
             const resCancel = await this.cancelOrder(id)
             if (!resCancel.success) return { success: false, message: resCancel.message }
             const resUpdateStopLoss = await this.openStopLoss(String(amount), String(fractal))
 
             const result = resCancel.success && resUpdateStopLoss.success
 
-            return { success: result, message: result ? 'Updated stoploss!' : 'Something went wrong updating stoploss' }
+            return { success: result, message: result ? 'Updated stoploss!' : 'Something went wrong updating stoploss.' }
         } catch (e) {
             console.log(e)
             return { success: false, message: e }

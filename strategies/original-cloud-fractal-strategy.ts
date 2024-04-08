@@ -37,7 +37,7 @@ export const runStrategy = async () => {
 
     const stopLossRes = await tradingClient.checkAndUpdateLongStopLoss(fractals)
 
-    await sendEvent(`${signal}. ${stopLossRes.message}. ${signalDetails}`)
+    await sendEvent(`${signal}. ${stopLossRes.message} ${signalDetails}`)
 
     if (signal !== 'LONG') return
     const openTrades = await tradingClient.hasOpenTrades()
