@@ -13,10 +13,34 @@ export class BitfinexTradingClass extends BaseTradingClass {
     async getAccountBalance(): Promise<number> {
         try {
             const marginBase = await this.bfxClient.bitfinexApiPost('v2/auth/r/info/margin/base')
+            console.log(marginBase)
+
             return marginBase[1][2].toFixed(2)
         } catch (e) {
             console.log(e)
             return 0
+        }
+    }
+
+    async getMarginWalletBTC(): Promise<string> {
+        try {
+            const wallet = await this.bfxClient.bitfinexApiPost('v2/auth/r/wallets')
+            const ballanceInBTC = wallet.find((w: any) => w[0] === 'margin' && w[1] === 'BTC')[2]
+
+            return String(ballanceInBTC)
+        } catch (e) {
+            console.log(e)
+            return '0'
+        }
+    }
+
+    async getBTCPrice(): Promise<string> {
+        try {
+            const tickerResponse = await (await fetch('https://api-pub.bitfinex.com/v2/tickers?symbols=tBTCUSD')).json()
+            return String(tickerResponse[0][1])
+        } catch (e) {
+            console.log(e)
+            return '0'
         }
     }
 
@@ -25,7 +49,7 @@ export class BitfinexTradingClass extends BaseTradingClass {
             const sizeInDollars = this.getPositionSizeInDollars(accountBalance)
             const tickerResponse = await (await fetch('https://api-pub.bitfinex.com/v2/tickers?symbols=tBTCUSD')).json()
             const currentPrice = tickerResponse[0][1]
-            return Number((sizeInDollars / currentPrice).toFixed(5))
+            return Number((Number(sizeInDollars) / currentPrice).toFixed(5))
         } catch (e) {
             console.log(e)
             return 0
@@ -62,7 +86,8 @@ export class BitfinexTradingClass extends BaseTradingClass {
             }
 
             const res = await this.bfxClient.bitfinexApiPost('v2/auth/w/order/submit', body)
-            return { success: res[6] === 'SUCCESS', message: String(res[7]) }
+
+            return { success: res[6] === 'SUCCESS', message: String(res[7]), data: res }
         } catch (e) {
             console.log(e)
             return { success: false, message: e }
@@ -93,6 +118,11 @@ export class BitfinexTradingClass extends BaseTradingClass {
             const positions: any[] = await this.bfxClient.bitfinexApiPost('v2/auth/r/positions')
             const orders: any[] = await this.bfxClient.bitfinexApiPost('v2/auth/r/orders')
 
+            console.log('positions: ', positions)
+            console.log('orders: ', orders)
+
+            if (positions.length === 0) return { success: false, message: '' }
+
             if (positions.length !== 0 && orders.length === 0) {
                 const amount = positions[0][2] * -1
                 const stopRes = await this.openStopLoss(String(amount), String(fractal))
@@ -117,8 +147,4 @@ export class BitfinexTradingClass extends BaseTradingClass {
             return { success: false, message: e }
         }
     }
-    // // Optionally override the closeAllTrades method
-    // override closeAllTrades(): void {
-    //     console.log('Specific logic for closing all Bitcoin trades.');
-    // }
 }

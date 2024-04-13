@@ -13,9 +13,9 @@ export abstract class BaseTradingClass {
     abstract openLong(amount: string): Promise<BaseResponse>
     abstract openStopLoss(price: string, amount: string): Promise<BaseResponse>
 
-    getPositionSizeInDollars(accountBalance: number): number {
+    getPositionSizeInDollars(accountBalance: number): string {
         const risk = this.getRisk()
-        return Number((risk * accountBalance).toFixed(2))
+        return String(Number((risk * accountBalance).toFixed(2)))
     }
 
     private getRisk() {

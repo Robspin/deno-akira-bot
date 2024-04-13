@@ -4,7 +4,7 @@ import { ichimoku, Signal } from '../indicators/ichimoku.ts'
 import { sendEvent as apiSendEvent } from '../helpers/event-api.ts'
 import { BitfinexTradingClass } from '../helpers/bitfinex/bitfinex-trading-class.ts'
 import { BitfinexBaseClient } from '../helpers/bitfinex/bitfinex-base-client.ts'
-import { dbUpdateStrategy } from '../helpers/db-api.ts'
+import { dbPostTrade, dbUpdateStrategy } from '../helpers/db-api.ts'
 
 type StrategyInfo = {
     fractals:  { upFractals: number[], downFractals: number[] }
@@ -19,6 +19,9 @@ export const getStrategyInfo = async (): Promise<StrategyInfo> => {
 
     return { fractals, signal, signalDetails }
 }
+
+
+
 
 const sendEvent = async (message: string) => {
     try {
@@ -44,13 +47,20 @@ export const runStrategy = async () => {
     if (openTrades) return
 
     const accountBalance = await tradingClient.getAccountBalance()
-    // const positionSizeUSD = tradingClient.getPositionSizeInDollars(accountBalance)
     const positionSizeBTC = String(await tradingClient.getPositionSizeInBTC(accountBalance))
     const negativePositionSizeBTC = String(Number(positionSizeBTC) * -1)
 
     const openLong = await tradingClient.openLong(String(positionSizeBTC))
     const setStopLoss = await tradingClient.openStopLoss(negativePositionSizeBTC, String(fractals.downFractals[0]))
     const updateDBRes = await dbUpdateStrategy('ICHIMOKU_WILLIAMS_LONG', { inTrade: true })
+    const createTradeInDB = await dbPostTrade({
+        tradeId: '',
+        entryPrice: '',
+        entryAccountSize: '',
+        sizeInBTC: '',
+        sizeInUSD: '',
+        strategyName: 'ICHIMOKU_WILLIAMS_LONG'
+    })
 
     await sendEvent(`Entered long trade! Opened long: ${openLong.success}, has set a stop ${setStopLoss.success}, updatedDB: ${updateDBRes?.success}`)
 
