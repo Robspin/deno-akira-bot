@@ -17,5 +17,9 @@ export const sendEvent = async (message: string) => {
         method: 'POST'
     }
 
-    return await fetch(`${env.EVENT_API_URL}/events`, config)
+    try {
+        return await fetch(`${env.EVENT_API_URL}/events`, config)
+    } catch (e) {
+        console.log(e)
+    }
 }

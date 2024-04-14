@@ -1,3 +1,8 @@
+export interface ApiResponse<T> {
+    message: string
+    data: T
+    success: boolean
+}
 
 export type UpdateStrategyData = {
     active?: boolean
@@ -14,8 +19,14 @@ export type TradePostData = {
     strategyName: string
 }
 
+export type TradeUpdateData = {
+    exitPrice: string
+    exitAccountSize: string
+    exitedTradeAt: string
+}
+
 export type Trade = {
-    tradeId: string
+    orderId: string
     entryPrice: string
     entryAccountSize: string
     sizeInBTC:  string

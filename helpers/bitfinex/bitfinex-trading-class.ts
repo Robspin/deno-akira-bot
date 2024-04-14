@@ -59,10 +59,32 @@ export class BitfinexTradingClass extends BaseTradingClass {
     async hasOpenTrades(): Promise<boolean> {
         try {
             const positions: any[] = await this.bfxClient.bitfinexApiPost('v2/auth/r/positions')
+
             return positions.length > 0
         } catch (e) {
             console.log(e)
             return false
+        }
+    }
+
+    async getOrderById(id: string): Promise<boolean> {
+        try {
+            const positions: any[] = await this.bfxClient.bitfinexApiPost(`v2/auth/r/order/tBTCUSD:${id}/trades`)
+            console.log(positions)
+            return positions.length > 0
+        } catch (e) {
+            console.log(e)
+            return false
+        }
+    }
+    async getLastStopPrice(): Promise<string> {
+        try {
+            const trades: any[] = await this.bfxClient.bitfinexApiPost(`v2/auth/r/trades/hist`)
+            const stopExecutionPrice = trades.find((p: any) => p[6] === 'STOP')[5]
+            return String(stopExecutionPrice)
+        } catch (e) {
+            console.log(e)
+            return '0'
         }
     }
 

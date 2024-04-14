@@ -4,13 +4,22 @@ import { env } from '../constants.ts'
 import { ichimoku } from '../indicators/ichimoku.ts'
 import { BitfinexBaseClient } from '../helpers/bitfinex/bitfinex-base-client.ts'
 import { BitfinexTradingClass } from '../helpers/bitfinex/bitfinex-trading-class.ts'
-import { dbPostTrade } from '../helpers/db-api.ts'
+import { dbGetStrategyTrades, dbPostTrade, dbUpdateTrade } from '../helpers/db-api.ts'
+import { TradeUpdateData } from '../types.ts'
+import { sendEvent } from '../helpers/event-api.ts'
 
 
 class IchimokuWilliamsLong extends BaseStrategyClass {
-    strategyName = 'ICHIMOKU_WILLIAMS_LONG'
+    public strategyName = 'ICHIMOKU_WILLIAMS_LONG'
+    public tradingClient: BitfinexTradingClass
 
-    async checkStrategy(): Promise<StrategyResponse> {
+    constructor() {
+        super()
+        const bfxClient = new BitfinexBaseClient(env.BITFINEX_API_KEY ?? '', env.BITFINEX_API_SECRET ?? '')
+        this.tradingClient = new BitfinexTradingClass(bfxClient)
+    }
+
+    checkStrategy = async (): Promise<StrategyResponse> => {
         console.log('checking strategy...')
         const fractals = await williamsFractals(env.STRATEGY_FRACTAL_TIMEFRAME ?? '')
         const { signal: ichimokuSignal } = await ichimoku(env.STRATEGY_ICHIMOKU_TIMEFRAME ?? '')
@@ -21,26 +30,29 @@ class IchimokuWilliamsLong extends BaseStrategyClass {
         }
     }
 
-    async strategyAction({ signal, stop }: StrategyResponse): Promise<ActionReport> {
+    strategyAction = async ({ signal, stop }: StrategyResponse): Promise<ActionReport> => {
         console.log('strategy signal: ', signal)
         const actionReport: ActionReport = {
-            trade: undefined
+            trade: undefined,
+            openPosition: false,
+            accountSize: '0'
         }
 
-        const bfxClient = new BitfinexBaseClient(env.BITFINEX_API_KEY ?? '', env.BITFINEX_API_SECRET ?? '')
-        const tradingClient = new BitfinexTradingClass(bfxClient)
-        const openTrades = await tradingClient.hasOpenTrades()
+        const openTrades = await this.tradingClient.hasOpenTrades()
+        const accountBalanceInBTC = await this.tradingClient.getMarginWalletBTC()
+
+        actionReport.openPosition = openTrades
+        actionReport.accountSize = accountBalanceInBTC
 
         if (openTrades || signal !== 'LONG') return actionReport
 
-        const accountBalance = await tradingClient.getAccountBalance()
-        const accountBalanceInBTC = await tradingClient.getMarginWalletBTC()
-        const currentBTCPrice = await tradingClient.getBTCPrice()
-        const positionSizeBTC = String(await tradingClient.getPositionSizeInBTC(accountBalance))
+        const accountBalance = await this.tradingClient.getAccountBalance()
+        const currentBTCPrice = await this.tradingClient.getBTCPrice()
+        const positionSizeBTC = String(await this.tradingClient.getPositionSizeInBTC(accountBalance))
         const negativePositionSizeBTC = String(Number(positionSizeBTC) * -1)
 
-        const openLong = await tradingClient.openLong(String(positionSizeBTC))
-        const setStopLoss = await tradingClient.openStopLoss(negativePositionSizeBTC, stop)
+        const openLong = await this.tradingClient.openLong(String(positionSizeBTC))
+        const setStopLoss = await this.tradingClient.openStopLoss(negativePositionSizeBTC, stop)
 
         const orderFillPrice = String(openLong.data[4][0][16])
         const orderId = String(openLong.data[4][0][0])
@@ -55,19 +67,36 @@ class IchimokuWilliamsLong extends BaseStrategyClass {
                 entryPrice: orderFillPrice,
                 entryAccountSize: accountBalanceInBTC,
                 size: positionSizeBTC,
-                strategyName: 'ICHIMOKU_WILLIAMS_LONG'
+                strategyName: this.strategyName
             }
         }
 
         return actionReport
     }
 
-    async management(actionReport: ActionReport): Promise<void> {
-        console.log('action report: ', actionReport)
-
+    management = async (actionReport: ActionReport): Promise<void> => {
+        console.log('starting management...')
+        console.log(actionReport)
         if (actionReport.trade) {
             const { success } = await dbPostTrade(actionReport.trade)
             console.log('sucessfully inserted trade in db :', success)
+            await sendEvent('Entered long trade!')
+        } else if (!actionReport.openPosition) {
+            const { data: historicalTrades } = await dbGetStrategyTrades(this.strategyName)
+            const { orderId, exitPrice } = await historicalTrades[0]
+            if (!exitPrice) {
+                const lastStopPrice = await this.tradingClient.getLastStopPrice()
+                const updateData: TradeUpdateData = {
+                    exitPrice: lastStopPrice,
+                    exitAccountSize: actionReport.accountSize,
+                    exitedTradeAt: String(new Date())
+                }
+
+                const dbUpdateRes = await dbUpdateTrade(orderId, updateData)
+
+                console.log('successfully updated past trade in db: ', dbUpdateRes.success)
+                await sendEvent('Updated past trade data!')
+            }
         }
     }
 }

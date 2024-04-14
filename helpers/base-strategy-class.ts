@@ -12,11 +12,12 @@ export type ActionReport = {
         entryAccountSize: string
         size: string
         strategyName: string
-    }
+    },
+    openPosition: boolean
+    accountSize: string
 }
 
 export abstract class BaseStrategyClass {
-    abstract strategyName: string
     abstract checkStrategy(): Promise<StrategyResponse>
     abstract strategyAction(strategy: StrategyResponse): Promise<ActionReport>
     abstract management(actionReport: ActionReport): void
