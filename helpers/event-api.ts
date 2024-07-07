@@ -1,10 +1,11 @@
 import { env } from '../constants.ts'
 
 
-export const sendEvent = async (message: string) => {
+export const sendEvent = async (message: string, sendNotification = false) => {
     const body = JSON.stringify({
         source: env.EVENT_API_SOURCE ?? '',
-        message
+        message,
+        sendNotification
     })
 
     const headers = {

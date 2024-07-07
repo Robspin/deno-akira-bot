@@ -22,7 +22,9 @@ class IchimokuWilliamsLong extends BaseStrategyClass {
     checkStrategy = async (): Promise<StrategyResponse> => {
         console.log('checking strategy...')
         const fractals = await williamsFractals(env.STRATEGY_FRACTAL_TIMEFRAME ?? '')
-        const { signal: ichimokuSignal } = await ichimoku(env.STRATEGY_ICHIMOKU_TIMEFRAME ?? '')
+        const { signal: ichimokuSignal, signalDetails } = await ichimoku(env.STRATEGY_ICHIMOKU_TIMEFRAME ?? '')
+
+        sendEvent(`${ichimokuSignal} - ${signalDetails}`)
 
         return  {
             signal: ichimokuSignal === 'LONG' ? 'LONG' : 'NO_SIGNAL',
@@ -80,7 +82,7 @@ class IchimokuWilliamsLong extends BaseStrategyClass {
         if (actionReport.trade) {
             const { success } = await dbPostTrade(actionReport.trade)
             console.log('sucessfully inserted trade in db :', success)
-            await sendEvent('Entered long trade!')
+            await sendEvent('Entered long trade!', true)
         } else if (!actionReport.openPosition) {
             const { data: historicalTrades } = await dbGetStrategyTrades(this.strategyName)
             const { orderId, exitPrice } = await historicalTrades[0]
@@ -95,7 +97,7 @@ class IchimokuWilliamsLong extends BaseStrategyClass {
                 const dbUpdateRes = await dbUpdateTrade(orderId, updateData)
 
                 console.log('successfully updated past trade in db: ', dbUpdateRes.success)
-                await sendEvent('Updated past trade data!')
+                await sendEvent('Updated past trade data!', true)
             }
         }
     }
